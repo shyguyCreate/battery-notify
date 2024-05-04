@@ -20,7 +20,7 @@ EOF
 
 ### Cron
 
-Add [cron job](https://wiki.archlinux.org/title/cron#Running_X.org_server-based_applications) for battery notifications.
+Add [cron job](https://wiki.archlinux.org/title/cron#Running_X.org_server-based_applications) for scheduled battery notifications.
 
 ```
 echo "* * * * * . $HOME/.Xenv &&  $HOME/.local/bin/battery-notify" | crontab -u $USER -

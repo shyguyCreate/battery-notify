@@ -4,6 +4,9 @@
 WARNING_LEVEL=25
 CRITICAL_LEVEL=10
 
+# Set file to save battery status
+battery_file=/tmp/battery-notify
+
 # Send notification
 send_notification() {
     notify-send "$status battery: ${capacity}%" -i "${icon}" -r 10001 -u "${urgency}"
@@ -12,7 +15,7 @@ send_notification() {
 # Write status to file
 write_status() {
     echo "$status" > "$battery_file"
-    exit
+    exit 0
 }
 
 # Do nothing if status is the same as file
@@ -24,9 +27,6 @@ compare_status() {
 capacity="$(cat /sys/class/power_supply/BAT?/capacity | head -n 1)"
 # Get battery status of first occurrence
 status="$(cat /sys/class/power_supply/BAT?/status | head -n 1)"
-
-# Set file to save battery status
-battery_file=/tmp/battery-notify
 
 # Change icon and urgency level for status
 [ "$status" = "Full" ] && compare_status && icon="battery-full-charged" urgency="low" send_notification && write_status
