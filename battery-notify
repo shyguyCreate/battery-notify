@@ -15,21 +15,12 @@ send_notification() {
 # Write status to file
 write_status() {
     echo "$status" > "$battery_file"
-    exit 0
 }
 
 # Do nothing if status is the same as file
 compare_status() {
-    [ ! -f "$battery_file" ] || [ "$status" != "$(cat "$battery_file")" ] || exit 0
+    [ ! -f "$battery_file" ] || [ "$status" != "$(cat "$battery_file")" ]
 }
-
-# Get battery capacity of first occurrence
-capacity="$(cat /sys/class/power_supply/BAT?/capacity | head -n 1)"
-# Get battery status of first occurrence
-status="$(cat /sys/class/power_supply/BAT?/status | head -n 1)"
-
-# Change icon and urgency level for status
-[ "$status" = "Full" ] && compare_status && icon="battery-full-charged" urgency="low" send_notification && write_status
 
 # Set icon name based on battery capacity
 # And set notification urgency level
@@ -46,8 +37,23 @@ get_icon() {
     fi
 }
 
-# Append status to icon and change urgency level for status
-[ "$status" = "Charging" ] && compare_status && get_icon && icon="${icon}-charging" urgency="normal" send_notification && write_status
+# Get battery capacity of first occurrence
+capacity="$(cat /sys/class/power_supply/BAT?/capacity | head -n 1)"
+# Get battery status of first occurrence
+status="$(cat /sys/class/power_supply/BAT?/status | head -n 1)"
 
-# Set status as icon to send notifications at different battery levels
-[ "$status" = "Discharging" ] && get_icon && status="$icon" compare_status && send_notification && status="$icon" write_status
+# Match battery status
+case $status in
+    Full)
+        # Change icon and urgency level for status
+        compare_status && icon="battery-full-charged" urgency="low" send_notification && write_status
+        ;;
+    Charging)
+        # Append status to icon and change urgency level for status
+        compare_status && get_icon && icon="${icon}-charging" urgency="normal" send_notification && write_status
+        ;;
+    Discharging)
+        # Set status as icon to send notifications at different battery levels
+        get_icon && status="$icon" compare_status && send_notification && status="$icon" write_status
+        ;;
+esac
